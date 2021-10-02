@@ -2022,9 +2022,26 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 		NSInteger lastTableType = NSNotFound, tableType;
 		NSRange substringRange;
 		NSString *filterString = [listFilterField stringValue];
+		BOOL pinnedTables = 0;
 		for (i = 0; i < [tables count]; i++) {
 			tableType = [[tableTypes objectAtIndex:i] integerValue];
-			if (tableType == SPTableTypeNone) continue;
+			if (tableType == SPTableTypeNone) {
+				if ([tables[i] isEqualTo:@"PINNED"]) { // pinned tables start
+					pinnedTables = 1;
+					[filteredTables addObject:@"PINNED"];
+					[filteredTableTypes addObject:@(SPTableTypeNone)];
+				}
+				else { // pinned tables end
+					pinnedTables = 0;
+				}
+				continue;
+			}
+
+			if (pinnedTables) {
+				[filteredTables addObject:[tables objectAtIndex:i]];
+				[filteredTableTypes addObject:[tableTypes objectAtIndex:i]];
+				continue;
+			}
 
 			// First check the table name against the string as a regex, falling back to direct string match
 			if (![[tables objectAtIndex:i] isMatchedByRegex:filterString]) {
