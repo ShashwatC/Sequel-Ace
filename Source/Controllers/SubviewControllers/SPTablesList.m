@@ -713,9 +713,19 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 }
 
 - (IBAction)pinTable:(id)sender {
-	if (selectedTableName) {
-		[pinnedTables addObject:selectedTableName];
+	if (!selectedTableName || [pinnedTables containsObject:selectedTableName]) {
+		return;
 	}
+
+	[pinnedTables addObject:selectedTableName];
+	if ([pinnedTables count] == 1) {
+		[tables insertObject:@"PINNED" atIndex:0];
+		[tableTypes insertObject:@(SPTableTypeNone) atIndex:0];
+	}
+	[tables insertObject:selectedTableName atIndex:1];
+	[tableTypes insertObject:@(selectedTableType) atIndex:1];
+
+	[tablesListView reloadData];
 }
 
 /**
@@ -2056,16 +2066,6 @@ static NSString *SPNewTableCollation    = @"SPNewTableCollation";
 			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
 			[filteredTables addObject:selectedTableName];
 			[filteredTableTypes addObject:[NSNumber numberWithInteger:selectedTableType]];
-		}
-
-		if ([pinnedTables count]) {
-			[filteredTables addObject:@"Pinned tables"];
-			[filteredTableTypes addObject:[NSNumber numberWithInteger:SPTableTypeNone]];
-			NSString * pinnedTable;
-			for (pinnedTable in pinnedTables) {
-				[filteredTables addObject:pinnedTable];
-				[filteredTableTypes addObject:[NSNumber numberWithInteger:selectedTableType]];
-			}
 		}
 
 		isTableListFiltered = YES;
